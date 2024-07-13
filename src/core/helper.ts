@@ -1,3 +1,6 @@
+import { JsonResponse } from '@/types/response'
+
+
 function removeByKeyValue<T extends object, K extends keyof T>(
   array: T[],
   key: K,
@@ -23,7 +26,7 @@ function logger({ name, data, id, level }: { name: string, data?: any, id: strin
   }
 }
 
-function successResponse(data: any, message?: string) {
+function successResponse(data: any, message?: string): JsonResponse {
   return {
     data,
     success: true,
@@ -31,7 +34,7 @@ function successResponse(data: any, message?: string) {
   }
 }
 
-function errorResponse(message: string) {
+function errorResponse(message: string): JsonResponse {
   return {
     success: false,
     message
