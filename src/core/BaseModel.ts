@@ -1,6 +1,5 @@
 export class BaseModel {
-  constructor() {
-  }
+  constructor() {}
   toJson() {
     return {
       ...this,

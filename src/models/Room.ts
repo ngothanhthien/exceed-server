@@ -4,6 +4,7 @@ import { BaseModel } from '@/core/BaseModel'
 import { Socket } from 'socket.io'
 import { BaseSocket } from '@/core/BaseSocket'
 import { ROOM_UPDATE_STATE } from '@/constants/client-listener'
+import { Game } from '@/models/Game'
 
 export const rooms: Room[] = []
 
@@ -11,11 +12,13 @@ export class Room extends BaseModel {
   id: number
   accounts: Account[]
   owner_id: number
+  game: Game | null
   constructor(account: Account) {
     super()
     this.id = generateUniqueId(rooms)
     this.owner_id = account.id
     this.accounts = [account]
+    this.game = null
     rooms.push(this)
   }
   leave(accountId: number) {
@@ -23,7 +26,7 @@ export class Room extends BaseModel {
       return this.destroy()
     }
     removeByKeyValue(this.accounts, 'id', accountId)
-    if(this.owner_id === accountId) {
+    if (this.owner_id === accountId) {
       this.setNewOwner(this.accounts[0].id)
     }
   }
@@ -45,48 +48,3 @@ export function findRoom(id: number) {
   return rooms.find(room => room.id === id)
 }
 
-export class RoomSocket extends BaseSocket {
-  room: Room
-  constructor(socket: Socket) {
-    super(socket)
-    if (this.account) {
-      const account = this.account
-      const room = rooms.find(room => room.has(account.id))
-      if (room) {
-        this.room = room
-      }
-    }
-  }
-  leave() {
-    if (!this.account) {
-      return
-    }
-    this.room.leave(this.account.id)
-    this.notifyUpdate()
-    if (this.room.accounts.length === 0) {
-      this.socket.leave(this.room.id.toString())
-    }
-  }
-  join() {
-    if (this.needAuth()) {
-      return
-    }
-    this.room.join(this.account as Account)
-
-    this.socket.join(this.room.id.toString())
-    this.notifyUpdate()
-    return this.room
-  }
-  create() {
-    if (this.needAuth()) {
-      return
-    }
-    this.room = new Room(this.account as Account)
-    this.socket.join(this.room.id.toString())
-    this.notifyUpdate()
-    return this.room
-  }
-  private notifyUpdate() {
-    this.socket.broadcast.emit(ROOM_UPDATE_STATE, this.room.toJson())
-  }
-}

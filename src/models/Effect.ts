@@ -1,3 +1,0 @@
-interface Effect {
-  run(): void
-}

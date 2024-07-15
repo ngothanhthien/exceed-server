@@ -3,39 +3,40 @@ import { createServer } from 'node:http'
 import { Server } from 'socket.io'
 import cors from 'cors'
 import { accounts } from '@/models/Account'
-import { rooms, RoomSocket } from '@/models/Room'
+import { rooms } from '@/models/Room'
 import { logger } from '@/core/helper'
 import registerRoomHandler from '@/handlers/room.handler'
 import registerAuthHandler from '@/handlers/auth.handler'
 import registerChatHandler from '@/handlers/chat.handler'
 import { AuthController } from '@/controllers/auth.controller'
 import { RoomController } from '@/controllers/room.controller'
+import { RoomSocket } from '@/socket-models/Room.Socket'
 
 const app = express()
 const ORIGIN = 'http://localhost:5173'
 app.use(express.json())
 app.use(
   cors({
-    origin: ORIGIN
+    origin: ORIGIN,
   })
 )
 const server = createServer(app)
 const io = new Server(server, {
   cors: {
-    origin: ORIGIN
-  }
+    origin: ORIGIN,
+  },
 })
 const PORT = 5000
 server.listen(PORT, () => {
   console.log('server running at http://localhost:' + PORT)
 })
 
-io.on('connection', (socket) => {
+io.on('connection', socket => {
   registerChatHandler(io, socket)
   registerAuthHandler(io, socket)
   registerRoomHandler(io, socket)
 })
-io.on('disconnect', (socket) => {
+io.on('disconnect', socket => {
   logger({ name: 'disconnect', id: socket.id })
   const roomSocket = new RoomSocket(socket)
   roomSocket.leave()
@@ -62,3 +63,4 @@ app.get('/accounts', AuthController.list)
 
 app.get('/rooms', RoomController.list)
 app.get('/room/current', RoomController.current)
+

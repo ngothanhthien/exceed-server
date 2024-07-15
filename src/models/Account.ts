@@ -1,6 +1,6 @@
 import { BaseModel } from '@/core/BaseModel'
 import { generateUniqueId } from '@/core/helper'
-import { random } from '@/core'
+import { random } from '@/core/random'
 
 export const accounts: GuestAccount[] = []
 
@@ -10,7 +10,7 @@ export interface Account {
   socket_id: string | null
 }
 
-export class GuestAccount extends BaseModel implements Account{
+export class GuestAccount extends BaseModel implements Account {
   name: string
   id: number
   socket_id: string | null
@@ -31,7 +31,4 @@ function currentAccount(id: number) {
   return accounts.find(account => account.id === id)
 }
 
-export {
-  getAccount,
-  currentAccount
-}
+export { getAccount, currentAccount }

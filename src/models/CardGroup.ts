@@ -1,19 +1,23 @@
 import { removeByKeyValue } from '@/core/helper'
-import { random } from '@/core'
+import { random } from '@/core/random'
+import { Card } from '@/models/Card'
+import { eventsEmitter } from '@/core/eventEmitter'
+import { DECK_AUTO_SHUFFLE } from '@/constants/self.listener.constant'
+import { Player } from '@/models/Player'
 
 class CardGroup {
   cards: Card[]
   constructor() {
     this.cards = []
   }
-  remove(card: Card) {
-    removeByKeyValue(this.cards, 'id', card.id)
+  remove(cardName: string) {
+    return removeByKeyValue(this.cards, 'name', cardName)
   }
   add(card: Card) {
     this.cards.push(card)
   }
-  detail(card: Card) {
-    return this.cards.find((item) => item.id === card.id)
+  detail(name: string) {
+    return this.cards.find(item => item.name === name)
   }
   get() {
     return this.cards.slice() // return a copy
@@ -23,6 +27,9 @@ class CardGroup {
   }
   clear() {
     this.cards = []
+  }
+  forceValue() {
+
   }
 }
 
@@ -46,7 +53,16 @@ class Deck extends CardGroup {
   shuffle() {
     random.shuffle(this.cards)
   }
-  draw() {
+  draw(ctx: Player) {
+    if (this.cards.length === 0) {
+      if (ctx.hasShuffled) {
+        eventsEmitter.emit('game:end', ctx.accountId, false, 'Deck is empty')
+        return
+      }
+      this.shuffle()
+      ctx.hasShuffled = true
+      eventsEmitter.emit(DECK_AUTO_SHUFFLE, ctx.accountId)
+    }
     return this.cards.pop()
   }
 }

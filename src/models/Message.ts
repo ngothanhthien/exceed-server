@@ -15,9 +15,7 @@ export class Message extends BaseModel {
   }
 }
 
-export class GlobalMessage extends Message {
-
-}
+export class GlobalMessage extends Message {}
 
 export class RoomMessage extends Message {
   room_id: number
